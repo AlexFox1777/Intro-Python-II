@@ -1,4 +1,3 @@
-#import module we need
 import random
 
 #file i/o functions for historical results
@@ -13,67 +12,53 @@ def save_results( w, t, l):
     text_file.write( str(w) + "," + str(t) + "," + str(l))
     text_file.close()
 
-#welcome message
+
+def start_game():
+    # print updated stats
+    print("Wins: %s, Ties: %s, Losses: %s" % (wins, ties, losses))
+    # prompt user to make another selection
+    print("Please choose to continue...")
+    # initialize user, computer choices
+    global computer
+    computer = random.randint(1, 3)
+    global user
+    user = int(input("[1] Rock  [2] Paper   [3] Scissors    [9] Quit\n"))
+
+
+def check_inputs(cmd, cpu_cmd):
+    if cmd == cpu_cmd:
+        return 0
+    elif cmd == 1 and cpu_cmd == 3 \
+        or cmd == 2 and cpu_cmd == 1 \
+        or cmd == 3 and cpu_cmd == 2:
+        return 1
+    else:
+        return -1
+
+
 results = load_results()
 wins = int(results[0])
-ties = int( results[1])
+ties = int(results[1])
 losses = int(results[2])
+choices = ['Zero', 'Rock', 'Paper', 'Scissors']
+
+#welcome message
 print("Welcome to Rock, Paper, Scissors!")
-print("Wins: %s, Ties: %s, Losses: %s" % (wins, ties, losses))
-print("Please choose to continue...")
+start_game()
 
-
-#initialize user, computer choices
-computer = random.randint(1,3)
-user = int(input("[1] Rock  [2] Paper   [3] Scissors    [9] Quit\n"))
 
 #gamplay loop
 while not user == 9:
-    #user chooses ROCK
-    if user == 1:
-        if computer == 1:
-            print("Computer chose rock...tie!")
-            ties += 1
-        elif computer == 2:
-            print("Computer chose paper...computer wins :(")
-            losses += 1
-        else:
-            print("Computer chose scissors...you wins :)")
-            wins += 1
-
-    #user chooses PAPER
-    elif user == 2:
-        if computer == 1:
-            print("Computer chose rock...you win :)")
-            wins += 1
-        elif computer == 2:
-            print("Computer chose paper...tie!")
-            ties += 1
-        else:
-            print("Computer chose scissors...computer wins :(")
-            losses += 1
-    
-    #user chooses SCISSORS
-    elif user == 3:
-        if computer == 1:
-            print("Computer chose rock...computer wins :(")
-            losses += 1
-        elif computer == 2:
-            print("Computer chose paper...you win :)")
-            wins += 1
-        else:
-            print("Computer chose scissors...tie!")
-            ties += 1
+    if user == 1 or user == 2 or user == 3:
+        result = check_inputs(computer, user)
+        if result == 0:
+            print(f"Computer chose {choices[computer]}...tie!")
+        if result == 1:
+            print(f"Computer chose {choices[computer]}...computer wins :(")
+        if result == -1:
+            print(f"Computer chose {choices[computer]}...you wins :)")
     else:
         print("Invalid selection. Please try again.")
-    #print updated stats
-    print("Wins: %s, Ties: %s, Losses: %s" % (wins, ties, losses))
-
-    #prompt user to make another selection
-    print("Please choose to continue...")
-    #initialize user, computer choices
-    computer = random.randint(1,3)
-    user = int(input("[1] Rock  [2] Paper   [3] Scissors    [9] Quit\n"))
-
+    start_game()
 # #game over, save results
 save_results(wins, ties, losses)
