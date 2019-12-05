@@ -1,8 +1,8 @@
 from room import Room
 from player import Player
+from src.item import Item
 
 # Declare all the rooms
-
 room = {
     'outside': Room("Outside Cave Entrance",
                     "North of you, the cave mount beckons", 'outside'),
@@ -32,6 +32,28 @@ room['overlook'].s_to = room['foyer']
 room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
+
+# Put items in rooms
+
+item1 = Item("Bone1", "Trash")
+item2 = Item("Bone2", "Trash")
+item3 = Item("Empty Chest", "Trash")
+insect1 = Item("Poisonous spider", "Used to cook poisons for enemies")
+animal1 = Item("Rat", "Used to cook Medium Panacea Potion")
+# items for foyer
+room['outside'].n_to.add_item(item1)
+room['outside'].n_to.add_item(item2)
+# items for overlook
+room['foyer'].n_to.add_item(item1)
+room['foyer'].n_to.add_item(item2)
+# items for treasure
+room['narrow'].n_to.add_item(item1)
+room['narrow'].n_to.add_item(item2)
+room['narrow'].n_to.add_item(item3)
+# items for narrow
+room['foyer'].e_to.add_item(item1)
+room['foyer'].e_to.add_item(insect1)
+room['foyer'].e_to.add_item(animal1)
 
 #
 # Main
@@ -64,10 +86,13 @@ def start_game():
     print(f"Current room: {room[str(player.current_room)].name}")
     # * Prints the current description
     print(f"Room description: {room[str(player.current_room)].description}")
+    # * Prints items in the room
+    print(f"Items in  {room[str(player.current_room)].name}: ")
+    room[str(player.current_room)].get_items()
     # * Waits for user input and decides what to do.
     global user_input
     print("!!!Please choose to continue...!!!")
-    user_input = input('[n] North [s] South [e] East [w] West\n')
+    user_input = input('[n] North [s] South [e] East [w] West [t] Take loot [i] Open inventory [d] Drop items [q] Finish The Game\n')
 
 
 # welcome message
@@ -75,7 +100,7 @@ print(f'Welcome to Adventure Game {player.name}!')
 start_game()
 
 
-# check if the path exists
+# check if link to room exists
 def is_bound(m):
     if hasattr(m, '__self__'):
         divider()
@@ -83,25 +108,59 @@ def is_bound(m):
     return hasattr(m, '__self__')
 
 
+# move user to room
+def move(obj, path):
+    # get room instance
+    current_room = getattr(obj, path)
+    # change place of player
+    player.__setattr__("current_room", current_room)
+
+
+# put items in inventory
+def open_inventory():
+    while len(room[str(player.current_room)].items) > 0:
+        for num, i in enumerate(room[str(player.current_room)].items):
+            print(f"Do you want to take {i}?")
+            u_i = input(f'[y] Yes [n] No [c] Close inventory\n')
+            if u_i == 'y':
+                player.add_item(i)
+                room[str(player.current_room)].del_item(num)
+            if u_i == 'c':
+                return False
+
+def manage_inventory():
+    while len(player.inventory) > 0:
+        for num, i in enumerate(player.inventory):
+            print(f"Do you want to drop {i}?")
+            u_i = input(f'[y] Yes [n] No [c] Close inventory\n')
+            if u_i == 'y':
+                del player.inventory[num]
+                room[str(player.current_room)].add_item(i)
+            if u_i == 'c':
+                return False
+
 # repl
 while not user_input == 'q':
     if user_input == 'n' or user_input == 's' or user_input == 'e' or user_input == 'w':
         if user_input == 'n':
             if not is_bound(room[str(player.current_room)].n_to):
-                current_room = room[str(player.current_room)].n_to
-                player.set_room(current_room)
+                move(room[str(player.current_room)], "n_to")
         if user_input == 's':
             if not is_bound(room[str(player.current_room)].s_to):
-                current_room = room[str(player.current_room)].s_to
-                player.set_room(current_room)
+                move(room[str(player.current_room)], "s_to")
         if user_input == 'e':
             if not is_bound(room[str(player.current_room)].e_to):
-                current_room = room[str(player.current_room)].e_to
-                player.set_room(current_room)
+                move(room[str(player.current_room)], "e_to")
         if user_input == 'w':
             if not is_bound(room[str(player.current_room)].w_to):
-                current_room = room[str(player.current_room)].w_to
-                player.set_room(current_room)
+                move(room[str(player.current_room)], "w_to")
+    elif user_input == 't':
+        open_inventory()
+    elif user_input == 'd':
+        manage_inventory()
+    elif user_input == 'i':
+        divider()
+        player.get_inventory()
     else:
         divider()
         print("Invalid selection pleas try again")

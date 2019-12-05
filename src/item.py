@@ -4,4 +4,4 @@ class Item:
         self.description = description
 
     def __str__(self):
-        return f"Item name: {self.name}"
+        return f"Item: {self.name}"
